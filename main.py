@@ -1,7 +1,9 @@
 from curso import Curso
 from disciplina import Disciplina
 from unidade import Unidade
+from menu import Menu
 
+import sys
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,7 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from time import sleep
-
+from tqdm import tqdm
 
 class JupiterWeb():
     def __init__(self):
@@ -19,14 +21,14 @@ class JupiterWeb():
         self.link = "https://uspdigital.usp.br/jupiterweb/jupCarreira.jsp?codmnu=8275"
         
         chrome_options = Options()
-        chrome_options.add_argument("--headless") 
+        chrome_options.add_argument("--headless") # Descomentar para visualização no navegador
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.get(self.link)
 
         try:
             WebDriverWait(self.driver, 10).until(
                 lambda driver: driver.find_element(By.ID, "comboUnidade").is_displayed()
-            )
+            ) # Tenta encontrar a barra de seleção de unidades e checar se ela aparece
         except Exception:
             print("Site não carregou ou div não foi carregada")
             self.driver.quit()
@@ -45,6 +47,7 @@ class JupiterWeb():
         unidade_select_element = self.driver.find_element(By.ID, "comboUnidade")
         unidade_select = Select(unidade_select_element)
 
+        # Pega todas as unidades, pulando o "Selecione a unidade"
         unidades = [x.text for x in unidade_select.options][1::]
 
         return unidades
@@ -60,10 +63,12 @@ class JupiterWeb():
         u = Unidade(unidade)
 
         try:
+            # Checa se há mais uma opção na barra de curso
             WebDriverWait(self.driver, 5).until(
                 lambda driver: len(Select(driver.find_element(By.ID, "comboCurso")).options) > 1
             )
 
+            # Entrai todos os cursos e insere no objeto Unidade
             curso_select_element = self.driver.find_element(By.ID, "comboCurso")
             self.curso_select = Select(curso_select_element)
 
@@ -72,6 +77,7 @@ class JupiterWeb():
             for c in cursos:
                 u.add_curso(c)
 
+            # Adiciona a unidade na lista de unidades da classe JupiterWeb
             self.unidades.append(u)
             return cursos
         except Exception:
@@ -81,21 +87,33 @@ class JupiterWeb():
         
     def selecionarCurso(self, curso):
         self.curso_select.select_by_visible_text(curso)
-        self.buscar()
+
+        return self.buscar()
         
     def buscar(self):
         botaoBuscar = self.driver.find_element(By.ID, "enviar")
         botaoBuscar.click()
 
-        try:
-            WebDriverWait(self.driver, 5).until(
-                lambda driver: driver.find_element(By.ID, "step4-tab").is_displayed()
+        try: # Verifica se o elemento de erro aparece
+            WebDriverWait(self.driver, 1).until(
+                lambda driver: driver.find_element(By.ID, "err").is_displayed()
             )
-        except Exception as e:
-            print("Erro ao buscar o elemento 'step4-tab':", e)
-
-        return
-
+            botoes = self.driver.find_elements(By.CSS_SELECTOR, "button.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only")
+            for botao in botoes:
+                span = botao.find_element(By.TAG_NAME, "span")  # Pega o primeiro <span>
+                if span.text == 'Fechar':
+                    botao.click()
+            return 0
+        except:
+            try:
+                WebDriverWait(self.driver, 1).until(
+                    lambda driver: driver.find_element(By.ID, "step4-tab").is_displayed()
+                )
+            except Exception as e:
+                print("Erro ao buscar o elemento 'step4-tab':", e)
+        
+        return 1
+    
     def close(self):
         self.driver.quit()
 
@@ -139,7 +157,7 @@ class JupiterWeb():
         """
         # Espera para poder interagir com o site novamente
         try:
-            WebDriverWait(self.driver, 10).until_not(
+            WebDriverWait(self.driver, 35).until_not(
             lambda driver: driver.find_element(By.CSS_SELECTOR, ".blockUI.blockOverlay").is_displayed()
             )
         except Exception:
@@ -211,24 +229,34 @@ class JupiterWeb():
     def imprimir_cursos(self):
         for u in self.unidades:
             print(f"\nNome: {u.nome}")
-            print(u.cursos)    
+            print(u.cursos)  
 
-
-# -------------------------------------------------------------------------------- #
 def main():
+    if len(sys.argv) != 2:
+        print("Modo de uso: python3 main.py (numero de unidades tratadas)")
+        return
+
+    print("Inicializando Menu...")
+    menu = Menu()
+    menu.limpar_console()
+    menu.imprimirBarras("Extraindo informações do JupiterWeb, aguarde.")
     jupiterweb = JupiterWeb()
 
     unidades = jupiterweb.listar_unidades()
 
-    for unidade in unidades[0:2]:
-        # print(f"Unidade {unidade}:")
-        
+    for unidade in tqdm(unidades[:int(sys.argv[1])], desc="Unidades", leave=False):    
+        # Pega todos os cursos daquela unidade
         cursos = jupiterweb.lista_cursos(unidade)
         
-        for curso in cursos:
-            jupiterweb.selecionarCurso(curso)
-            jupiterweb.retornarInformacoes(curso, unidade)
+        for curso in tqdm(cursos, desc=f"Cursos ({unidade[:15]}...)", leave=False):
+            if jupiterweb.selecionarCurso(curso):
+                jupiterweb.retornarInformacoes(curso, unidade)
 
+    jupiterweb.close()
+
+    menu.limpar_console()
+    menu.imprimirBarras("Informações extraídas com sucesso.")
+    menu.principal(jupiterweb)
 
     # ------------ TESTE DE UM CURSO SÓ ----------------
     # unidades = jupiterweb.listar_unidades()
@@ -239,10 +267,6 @@ def main():
     # cursos = jupiterweb.lista_cursos(unidades[0])
     # jupiterweb.selecionarCurso(cursos[0])
     # jupiterweb.retornarInformacoes(cursos[0], unidades[0])
-
-    jupiterweb.imprimir_cursos()
-
-    jupiterweb.close()
     
 
 if __name__ == "__main__":
