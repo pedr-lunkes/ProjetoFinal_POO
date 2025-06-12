@@ -2,6 +2,7 @@ import os
 from rapidfuzz import process
 import spacy
 import shutil
+from grafo import Grafo
 
 class Menu():
     def __init__(self):
@@ -48,10 +49,11 @@ class Menu():
             print("1. Listar Unidades")
             print("2. Listar todos os Cursos")
             print("3. Listar Cursos dado uma Unidade")
-            print("4. Listar Dados de um Curso")
-            print("5. Dados de uma disciplina")
-            print("6. Disciplinas que são usadas em mais de um curso")
-            print("7. Sair")
+            print("4. Listar dados de um Curso")
+            print("5. Listar dados de uma Disciplina")
+            print("6. Listar Disciplinas que são usadas em mais de um Curso")
+            print("7. Criar um Grafo dos Cursos baseado nas Disciplinas em comum")
+            print("8. Sair")
 
             comando = input('-> ')
             self.limpar_console()
@@ -107,20 +109,19 @@ class Menu():
 
                 # TEM QUE PRINTAR OS CURSOS DA UNIDADE PEDRO PEREZ
 
-        # Listar dados de um curso:
+        # Listar dados de um Curso:
             elif comando == '4':
                 self.imprimirBarras("Escreva o nome do Curso que você deseja consultar:")
             
                 termo_busca = self.normalizar_termo(input('-> '))
                 dic_cursos = {}
-                for unidade in jupiterweb.unidades:
-                    for curso in unidade.cursos:
-                        dic_cursos[curso.nome + '-' + unidade.nome] = curso
+                for curso in jupiterweb.cursos:
+                    dic_cursos[f'{curso.nome} da {curso.unidade}'] = curso
 
                 # Obter TODOS os matches com score > 60
                 matches = process.extract(
                     termo_busca, 
-                    list(dic_cursos.key()),
+                    list(dic_cursos.keys()),
                     score_cutoff=60
                 )
 
@@ -131,29 +132,66 @@ class Menu():
                             print(f'{i+1}.{match[0]}')
                         try:
                             indice = int(input('\n-> '))
-                            curso = dic_unidades[matches[indice - 1][0]].nome
+                            curso = dic_cursos[matches[indice - 1][0]].nome
+                            print(matches[indice - 1][0])
                             print(curso) # debug
                         except:
                             self.imprimirBarras("Erro: índice inválido")
 
                     else:
-                        curso = dic_unidades[matches[0][0]].nome
+                        curso = dic_cursos[matches[0][0]].nome
+                        print(matches[0][0])
                         print(curso)
 
                     # TEM QUE PRINTAR OS DETALHES DO CURSO PEDRO PEREZ
                 else:
                     self.imprimirBarras("Nenhum curso correspondente encontrado.")
                 
-        # Listar dados de uma disciplina
+        # Listar dados de uma Disciplina
             elif comando == '5':
-                print("Se quiser eu faço pedro perez")
+                self.imprimirBarras("Escreva o nome da Disciplina que você deseja consultar:")
+
+                termo_busca = self.normalizar_termo(input('-> '))
+                dic_disciplinas = {f'{disciplina.cod} - {disciplina.nome}': disciplina for disciplina in jupiterweb.disciplinas}
+
+                # Obter TODOS os matches com score > 60
+                matches = process.extract(
+                    termo_busca, 
+                    list(dic_disciplinas.keys()),
+                    score_cutoff=60
+                )
+
+                if matches:
+                    if len(matches) != 1:
+                        self.imprimirBarras("Insira o número correspondente na lista abaixo")
+                        for i, match in enumerate(matches):
+                            print(f'{i+1}.{match[0]}')
+                        try:
+                            indice = int(input('\n-> '))
+                            disciplina = dic_disciplinas[matches[indice - 1][0]].nome
+                            print(disciplina) # debug
+                        except:
+                            self.imprimirBarras("Erro: índice inválido")
+
+                    else:
+                        disciplina = dic_disciplinas[matches[0][0]].nome
+                        print(disciplina)
 
         # Disciplinas que são usadas em mais de um curso (que negócio específico)
+        # Tá meio bunda, melhore pedro perez
             elif comando == '6':
-                print("Faça Pedro Perez")
-            
-        # Sair do programa
+                print(disciplina.cursos) # debug
+                for disciplina in jupiterweb.disciplinas:
+                    if len(disciplina.cursos) > 1:
+                        print(f'{disciplina.cod} - {disciplina.nome}')
+
+        # Grafo (ainda não funciona mt bem)
             elif comando == '7':
+                grafo_cursos = Grafo(jupiterweb.cursos)
+                grafo_cursos.plotar_grafo()
+                
+        # Sair do programa
+            elif comando == '8':
                 self.imprimirBarras("Encerrando...")
                 return
         

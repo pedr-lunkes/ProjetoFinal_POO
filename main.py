@@ -16,12 +16,13 @@ from tqdm import tqdm
 class JupiterWeb():
     def __init__(self):
         self.disciplinas = []
+        self.cursos = []
         self.unidades = []
 
         self.link = "https://uspdigital.usp.br/jupiterweb/jupCarreira.jsp?codmnu=8275"
         
         chrome_options = Options()
-        chrome_options.add_argument("--headless") # Descomentar para visualização no navegador
+        # chrome_options.add_argument("--headless") # Comentar para visualização no navegador
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.get(self.link)
 
@@ -33,6 +34,8 @@ class JupiterWeb():
             print("Site não carregou ou div não foi carregada")
             self.driver.quit()
             return
+        
+        sleep(1) # Para dar tempo de carregar as unidades dentro do comboUnidade
 
         # soup = BeautifulSoup(self.driver.page_source, "html.parser")
         # with open("soup_contents.txt", "w", encoding="utf-8") as f:
@@ -60,7 +63,7 @@ class JupiterWeb():
         unidade_select = Select(unidade_select_element)
         unidade_select.select_by_visible_text(unidade)
 
-        u = Unidade(unidade)
+        # u = Unidade(unidade)
 
         try:
             # Checa se há mais uma opção na barra de curso
@@ -74,11 +77,12 @@ class JupiterWeb():
 
             cursos = [x.text for x in self.curso_select.options][1::]
             
-            for c in cursos:
-                u.add_curso(c)
+            # for c in cursos:
+            #     u.add_curso(c)
 
-            # Adiciona a unidade na lista de unidades da classe JupiterWeb
-            self.unidades.append(u)
+            # # Adiciona a unidade na lista de unidades da classe JupiterWeb
+            # self.unidades.append(u)
+
             return cursos
         except Exception:
             print("Curso não carregado para a unidade:", unidade)
@@ -157,8 +161,8 @@ class JupiterWeb():
         """
         # Espera para poder interagir com o site novamente
         try:
-            WebDriverWait(self.driver, 35).until_not(
-            lambda driver: driver.find_element(By.CSS_SELECTOR, ".blockUI.blockOverlay").is_displayed()
+            WebDriverWait(self.driver, 60).until_not(
+                lambda driver: driver.find_element(By.CSS_SELECTOR, ".blockUI.blockOverlay").is_displayed()
             )
         except Exception:
             print("Overlay de carregamento não sumiu a tempo.")
@@ -244,13 +248,17 @@ def main():
 
     unidades = jupiterweb.listar_unidades()
 
-    for unidade in tqdm(unidades[:int(sys.argv[1])], desc="Unidades", leave=False):    
-        # Pega todos os cursos daquela unidade
+    for unidade in tqdm(unidades[:int(sys.argv[1])], desc="Unidades", leave=False):
+        u = Unidade(unidade)  
         cursos = jupiterweb.lista_cursos(unidade)
         
         for curso in tqdm(cursos, desc=f"Cursos ({unidade[:15]}...)", leave=False):
             if jupiterweb.selecionarCurso(curso):
-                jupiterweb.retornarInformacoes(curso, unidade)
+                c = jupiterweb.retornarInformacoes(curso, unidade)
+                u.add_curso(c)
+                jupiterweb.cursos.append(c)
+        
+        jupiterweb.unidades.append(u)
 
     jupiterweb.close()
 
