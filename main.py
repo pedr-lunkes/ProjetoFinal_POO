@@ -12,17 +12,18 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from time import sleep
 from tqdm import tqdm
+from typing import List
 
 class JupiterWeb():
     def __init__(self):
-        self.disciplinas = []
-        self.cursos = []
-        self.unidades = []
+        self.disciplinas: List[Disciplina] = []
+        self.cursos: List[Curso] = []
+        self.unidades: List[Unidade] = []
 
         self.link = "https://uspdigital.usp.br/jupiterweb/jupCarreira.jsp?codmnu=8275"
         
         chrome_options = Options()
-        # chrome_options.add_argument("--headless") # Comentar para visualização no navegador
+        chrome_options.add_argument("--headless") # Comentar para visualização no navegador
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.get(self.link)
 
@@ -232,11 +233,11 @@ class JupiterWeb():
     
     def imprimir_cursos(self):
         for u in self.unidades:
-            print(f"\nNome: {u.nome}")
-            print(u.cursos)  
+            print(u)  
 
 def main():
-    if len(sys.argv) != 2:
+    num_unidades = 0
+    if len(sys.argv) not in [1, 2]:
         print("Modo de uso: python3 main.py (numero de unidades tratadas)")
         return
 
@@ -247,8 +248,12 @@ def main():
     jupiterweb = JupiterWeb()
 
     unidades = jupiterweb.listar_unidades()
+    if len(sys.argv) == 1:
+        num_unidades = len(unidades)
+    else:
+        num_unidades = int(sys.argv[1])
 
-    for unidade in tqdm(unidades[:int(sys.argv[1])], desc="Unidades", leave=False):
+    for unidade in tqdm(unidades[:num_unidades], desc="Unidades", leave=False):
         u = Unidade(unidade)  
         cursos = jupiterweb.lista_cursos(unidade)
         
