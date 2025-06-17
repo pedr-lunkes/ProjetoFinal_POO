@@ -17,3 +17,18 @@ class Curso():
 
     def add_eletivas(self, eletiva):
         self.disc_op_eletivas.append(eletiva)
+
+    def str_disciplinas(self, disciplinas):
+        val = "["
+        cursos_str = ', '.join(str(d.nome) for d in disciplinas)
+        val += cursos_str + "]"
+        return val
+
+    def __str__(self):
+        valor = f"""Curso: {self.nome} \nUnidade: {self.unidade}
+Duração Ideal: {self.duracao_ideal} \nDuração Minima: {self.duracao_min} 
+Duração Maxima: {self.duracao_max} \nDuração Minima: {self.duracao_min} 
+Disciplinas Obrigatorias: {self.str_disciplinas(self.disc_obrigatorias)} 
+Disciplinas Eletivas: {self.str_disciplinas(self.disc_op_eletivas)} 
+Disciplinas Optativas Livres: {self.str_disciplinas(self.disc_op_livres)}"""
+        return valor

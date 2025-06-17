@@ -180,7 +180,7 @@ class Menu():
         # Disciplinas que são usadas em mais de um curso (que negócio específico)
         # Tá meio bunda, melhore pedro perez
             elif comando == '6':
-                print(disciplina.cursos) # debug
+                #print(disciplina.cursos) # debug
                 for disciplina in jupiterweb.disciplinas:
                     if len(disciplina.cursos) > 1:
                         print(f'{disciplina.cod} - {disciplina.nome}')

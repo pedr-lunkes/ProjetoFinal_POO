@@ -14,3 +14,14 @@ class Disciplina():
 
     def add_curso(self, curso):
         self.cursos.append(curso)
+
+    def cursos_da_disciplina(self):
+        cursos_str = '\n---------------------\n'.join(str(curso) for curso in self.cursos)
+        return cursos_str
+
+    def __str__(self):
+        valor = f"""Código: {self.cod} \nNome: {self.nome} 
+Créditos-Aula: {self.cred_aula} \nCréditos-Trabalho: {self.cred_aula} 
+Carga Horária: {self.carga_horaria} \nCarga Estágio: {self.carga_estagio} 
+Carga Práticas: {self.carga_praticas} \nAtividades: {self.atividades} \n"""
+        return valor
