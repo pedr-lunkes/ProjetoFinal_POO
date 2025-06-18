@@ -233,7 +233,7 @@ class JupiterWeb():
     
     def imprimir_cursos(self):
         for u in self.unidades:
-            print(u)  
+            print(u)
 
 def main():
     num_unidades = 0

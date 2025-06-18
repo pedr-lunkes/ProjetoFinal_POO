@@ -2,6 +2,7 @@ import os
 from rapidfuzz import process
 import spacy
 import shutil
+from collections import defaultdict
 from grafo import Grafo
 
 class Menu():
@@ -96,14 +97,14 @@ class Menu():
                             print(f'{i+1}.{match[0]}')
                         try:
                             indice = int(input('\n-> '))
-                            unidade = dic_unidades[matches[indice - 1][0]].nome
+                            unidade = dic_unidades[matches[indice - 1][0]]
                             print(unidade) # debug
                         except:
                             self.imprimirBarras("Erro: índice inválido")
 
                     else:
-                        unidade = dic_unidades[matches[0][0]].nome
-                        print(unidade) # debug
+                        unidade = dic_unidades[matches[0][0]]
+                        print(unidade)
                 else:
                     self.imprimirBarras("Nenhuma unidade correspondente encontrada.")
 
@@ -132,15 +133,15 @@ class Menu():
                             print(f'{i+1}.{match[0]}')
                         try:
                             indice = int(input('\n-> '))
-                            curso = dic_cursos[matches[indice - 1][0]].nome
-                            print(matches[indice - 1][0])
-                            print(curso) # debug
+                            curso = dic_cursos[matches[indice - 1][0]]
+                            #print(matches[indice - 1][0])
+                            print(curso)
                         except:
                             self.imprimirBarras("Erro: índice inválido")
 
                     else:
-                        curso = dic_cursos[matches[0][0]].nome
-                        print(matches[0][0])
+                        curso = dic_cursos[matches[0][0]]
+                        #print(matches[0][0])
                         print(curso)
 
                     # TEM QUE PRINTAR OS DETALHES DO CURSO PEDRO PEREZ
@@ -168,22 +169,25 @@ class Menu():
                             print(f'{i+1}.{match[0]}')
                         try:
                             indice = int(input('\n-> '))
-                            disciplina = dic_disciplinas[matches[indice - 1][0]].nome
-                            print(disciplina) # debug
+                            disciplina = dic_disciplinas[matches[indice - 1][0]]
+                            print(disciplina)
                         except:
                             self.imprimirBarras("Erro: índice inválido")
 
                     else:
-                        disciplina = dic_disciplinas[matches[0][0]].nome
+                        disciplina = dic_disciplinas[matches[0][0]]
                         print(disciplina)
 
         # Disciplinas que são usadas em mais de um curso (que negócio específico)
         # Tá meio bunda, melhore pedro perez
             elif comando == '6':
                 #print(disciplina.cursos) # debug
+                aparicoesCurso = defaultdict(int)
                 for disciplina in jupiterweb.disciplinas:
-                    if len(disciplina.cursos) > 1:
-                        print(f'{disciplina.cod} - {disciplina.nome}')
+                    for curso in disciplina.cursos:
+                        aparicoesCurso[curso.nome] += 1
+                        if aparicoesCurso[curso.nome] == 2:
+                            print(disciplina.nome)
 
         # Grafo (ainda não funciona mt bem)
             elif comando == '7':
