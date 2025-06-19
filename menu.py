@@ -65,7 +65,6 @@ class Menu():
                 self.imprimirBarras("Unidades")
 
                 # Melhora a função de imprimir unidades pra imprimir elas bonitinho
-
                 jupiterweb.imprimir_unidades()
 
             # Listar todos os Cursos
@@ -73,7 +72,6 @@ class Menu():
                 self.imprimirBarras("Cursos")
 
                 # Mesma coisa da de cima, só que pra cursos
-
                 jupiterweb.imprimir_cursos()
 
         # Listar Cursos dado uma Unidade
