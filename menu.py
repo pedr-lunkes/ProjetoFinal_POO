@@ -182,10 +182,8 @@ class Menu():
                 for disciplina in jupiterweb.disciplinas:
                     for curso in disciplina.cursos:
                         aparicoesCurso[curso.nome] += 1
-                for disciplina in jupiterweb.disciplinas:
-                    for curso in disciplina.cursos:
-                        if aparicoesCurso[curso.nome] > 1:
-                            print(f"{disciplina.nome}. Aparece em: {aparicoesCurso[curso.nome]} cursos")
+                        if aparicoesCurso[curso.nome] == 2:
+                            print(disciplina.nome)
 
         # Grafo (ainda não funciona mt bem)
             elif comando == '7':
