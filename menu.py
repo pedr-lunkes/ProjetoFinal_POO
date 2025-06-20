@@ -142,7 +142,6 @@ class Menu():
                         #print(matches[0][0])
                         print(curso)
 
-                    # TEM QUE PRINTAR OS DETALHES DO CURSO PEDRO PEREZ
                 else:
                     self.imprimirBarras("Nenhum curso correspondente encontrado.")
                 
@@ -179,13 +178,14 @@ class Menu():
         # Disciplinas que são usadas em mais de um curso (que negócio específico)
         # Tá meio bunda, melhore pedro perez
             elif comando == '6':
-                #print(disciplina.cursos) # debug
                 aparicoesCurso = defaultdict(int)
                 for disciplina in jupiterweb.disciplinas:
                     for curso in disciplina.cursos:
                         aparicoesCurso[curso.nome] += 1
-                        if aparicoesCurso[curso.nome] == 2:
-                            print(disciplina.nome)
+                for disciplina in jupiterweb.disciplinas:
+                    for curso in disciplina.cursos:
+                        if aparicoesCurso[curso.nome] > 1:
+                            print(f"{disciplina.nome}. Aparece em: {aparicoesCurso[curso.nome]} cursos")
 
         # Grafo (ainda não funciona mt bem)
             elif comando == '7':

@@ -23,7 +23,7 @@ class JupiterWeb():
         
         chrome_options = Options()
         chrome_options.page_load_strategy = 'eager'
-        chrome_options.add_argument("--headless") # Comentar abrir o chrome
+        # chrome_options.add_argument("--headless") # Comentar abrir o chrome / Sem essa bomba pode n funcionar
         chrome_options.add_argument("--enable-automation")
         chrome_options.add_argument("--disable-client-side-phishing-detection")
         chrome_options.add_argument("--disable-component-extensions-with-background-pages")
@@ -228,13 +228,12 @@ class JupiterWeb():
         return
     
     def add_unidade(self, unidade:Unidade):
-        self.unidades.append(unidade)
+        if unidade not in self.unidades:
+            self.unidades.append(unidade)
 
     def imprimir_unidades(self):
-        for u in self.unidades:
-            print(u.nome)
+        print('\n'.join(str(unidade.nome) for unidade in self.unidades))
     
     def imprimir_cursos(self):
-        for u in self.unidades:
-            print(u)
+        print('\n---------------------\n'.join(str(curso) for curso in self.cursos))
     

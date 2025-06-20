@@ -19,9 +19,13 @@ class Curso():
         self.disc_op_eletivas.append(eletiva)
 
     def str_disciplinas(self, disciplinas):
-        val = "["
-        cursos_str = ', '.join(str(d.nome) for d in disciplinas)
-        val += cursos_str + "]"
+        val = ''
+        if len(disciplinas) > 0:
+            val = "\n\t➤   "
+            cursos_str = '\n\t➤   '.join(str(d.nome) for d in disciplinas)
+            val += cursos_str + "\n"
+        else:
+            val = "\n\t    Sem disciplinas encontradas\n"
         return val
 
     def __str__(self):
