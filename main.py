@@ -6,7 +6,6 @@ from jupiterweb import JupiterWeb
 from tqdm import tqdm
 import sys
 
-
 def main():
     num_unidades = 0
     if len(sys.argv) not in [1, 2]:
@@ -19,12 +18,14 @@ def main():
     menu.imprimirBarras("Extraindo informações do JupiterWeb, aguarde.")
     jupiterweb = JupiterWeb()
 
+    # Caso não tenha parâmetros, lista todas as unidades
     unidades = jupiterweb.listar_unidades()
     if len(sys.argv) == 1:
         num_unidades = len(unidades)
     else:
         num_unidades = int(sys.argv[1])
 
+    # Loop para extrair todas as unidades e seu curso
     for unidade in tqdm(unidades[:num_unidades], desc="Unidades", leave=False):
         u = Unidade(unidade)  
         cursos = jupiterweb.lista_cursos(unidade)
@@ -36,8 +37,10 @@ def main():
 
             jupiterweb.add_unidade(u)
 
+    # Fecha o driver
     jupiterweb.close()
 
+    # Inicializa o menu principal para o usuário
     menu.limpar_console()
     menu.imprimirBarras("Informações extraídas com sucesso.")
     menu.principal(jupiterweb)

@@ -22,24 +22,9 @@ class Menu():
         print(barra)
 
     def normalizar_termo(self, termo) -> str:
-        # termo = termo.lower() - Normalização para minúscula, não dá certo
         doc = self.nlp(termo)
         lema = " ".join([token.lemma_ for token in doc])
         return lema
-    
-    def busca_campo(self, local_busca):
-        termo_busca = self.normalizar_termo(input())
-        nomes = [campo.nome for campo in local_busca]
-
-        # Obter TODOS os matches com score > 60
-        matches = process.extract(
-            termo_busca, 
-            nomes, 
-            score_cutoff=60
-        )
-
-        # Se alguma unidade tiver semelhança de pelo menos 60%, retorna aquela unidade
-        return matches
     
     # MENU PRINCIPAL
     def principal(self, jupiterweb) -> None:
@@ -59,19 +44,16 @@ class Menu():
             comando = input('-> ')
             self.limpar_console()
 
-        # Coisas para fazer aqui Perez
         # Listar Unidades
             if comando == '1':
                 self.imprimirBarras("Unidades")
 
-                # Melhora a função de imprimir unidades pra imprimir elas bonitinho
                 jupiterweb.imprimir_unidades()
 
-            # Listar todos os Cursos
+        # Listar todos os Cursos
             elif comando == '2':
                 self.imprimirBarras("Cursos")
 
-                # Mesma coisa da de cima, só que pra cursos
                 jupiterweb.imprimir_cursos()
 
         # Listar Cursos dado uma Unidade
@@ -81,11 +63,11 @@ class Menu():
                 termo_busca = self.normalizar_termo(input('-> '))
                 dic_unidades = {unidade.nome: unidade for unidade in jupiterweb.unidades}
 
-                # Obter TODOS os matches com score > 60
                 matches = process.extract(
                     termo_busca, 
                     list(dic_unidades.keys()),
-                    score_cutoff=60
+                    score_cutoff=60,
+                    limit=None
                 )
 
                 if matches:
@@ -96,7 +78,7 @@ class Menu():
                         try:
                             indice = int(input('\n-> '))
                             unidade = dic_unidades[matches[indice - 1][0]]
-                            print(unidade) # debug
+                            print(unidade)
                         except:
                             self.imprimirBarras("Erro: índice inválido")
 
@@ -105,8 +87,6 @@ class Menu():
                         print(unidade)
                 else:
                     self.imprimirBarras("Nenhuma unidade correspondente encontrada.")
-
-                # TEM QUE PRINTAR OS CURSOS DA UNIDADE PEDRO PEREZ
 
         # Listar dados de um Curso:
             elif comando == '4':
@@ -117,11 +97,11 @@ class Menu():
                 for curso in jupiterweb.cursos:
                     dic_cursos[f'{curso.nome} da {curso.unidade}'] = curso
 
-                # Obter TODOS os matches com score > 60
                 matches = process.extract(
                     termo_busca, 
                     list(dic_cursos.keys()),
-                    score_cutoff=60
+                    score_cutoff=60,
+                    limit=None
                 )
 
                 if matches:
@@ -132,14 +112,12 @@ class Menu():
                         try:
                             indice = int(input('\n-> '))
                             curso = dic_cursos[matches[indice - 1][0]]
-                            #print(matches[indice - 1][0])
                             print(curso)
                         except:
                             self.imprimirBarras("Erro: índice inválido")
 
                     else:
                         curso = dic_cursos[matches[0][0]]
-                        #print(matches[0][0])
                         print(curso)
 
                 else:
@@ -152,11 +130,11 @@ class Menu():
                 termo_busca = self.normalizar_termo(input('-> '))
                 dic_disciplinas = {f'{disciplina.cod} - {disciplina.nome}': disciplina for disciplina in jupiterweb.disciplinas}
 
-                # Obter TODOS os matches com score > 60
                 matches = process.extract(
                     termo_busca, 
                     list(dic_disciplinas.keys()),
-                    score_cutoff=60
+                    score_cutoff=80,
+                    limit=None
                 )
 
                 if matches:
@@ -175,8 +153,7 @@ class Menu():
                         disciplina = dic_disciplinas[matches[0][0]]
                         print(disciplina)
 
-        # Disciplinas que são usadas em mais de um curso (que negócio específico)
-        # Tá meio bunda, melhore pedro perez
+        # Disciplinas que são usadas em mais de um curso
             elif comando == '6':
                 aparicoesCurso = defaultdict(int)
                 for disciplina in jupiterweb.disciplinas:
@@ -185,8 +162,9 @@ class Menu():
                         if aparicoesCurso[curso.nome] == 2:
                             print(disciplina.nome)
 
-        # Grafo (ainda não funciona mt bem)
+        # Grafo
             elif comando == '7':
+                self.imprimirBarras("Gerando Grafo. Isso pode demorar um pouco...")
                 grafo_cursos = Grafo(jupiterweb.cursos)
                 grafo_cursos.plotar_grafo()
                 

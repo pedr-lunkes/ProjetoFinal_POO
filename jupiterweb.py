@@ -12,9 +12,13 @@ from bs4 import BeautifulSoup
 
 from typing import List
 
+TEMPO_ESPERA_MAX = 1000
 
 class JupiterWeb():
     def __init__(self):
+        """"
+        Inicializa o JupiterWeb e as configurações para Web Scrapping
+        """
         self.disciplinas: List[Disciplina] = []
         self.cursos: List[Curso] = []
         self.unidades: List[Unidade] = []
@@ -23,7 +27,6 @@ class JupiterWeb():
         
         chrome_options = Options()
         chrome_options.page_load_strategy = 'eager'
-        # chrome_options.add_argument("--headless") # Comentar abrir o chrome / Sem essa bomba pode n funcionar
         chrome_options.add_argument("--enable-automation")
         chrome_options.add_argument("--disable-client-side-phishing-detection")
         chrome_options.add_argument("--disable-component-extensions-with-background-pages")
@@ -40,7 +43,7 @@ class JupiterWeb():
         self.driver.get(self.link)
 
         try:
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until(
                 lambda driver: driver.find_element(By.ID, "comboUnidade").is_displayed()
             ) # Tenta encontrar a barra de seleção de unidades e checar se ela aparece
         except Exception:
@@ -48,9 +51,9 @@ class JupiterWeb():
             self.driver.quit()
             return
         
-        WebDriverWait(self.driver, 5).until(
+        WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until(
             lambda driver: len(Select(driver.find_element(By.ID, "comboUnidade")).options) > 1
-        )
+        ) # Checa se o conteúdo dentro da barra de seleção de unidades carregou
 
     # -------------------------------------------------------------------------------- #
     def listar_unidades(self):
@@ -75,11 +78,11 @@ class JupiterWeb():
 
         try:
             # Checa se há mais uma opção na barra de curso
-            WebDriverWait(self.driver, 5).until(
+            WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until(
                 lambda d: len(Select(d.find_element(By.ID, "comboCurso")).options) > 1
             )
 
-            # Entrai todos os cursos e insere no objeto Unidade
+            # Entrai todos os cursos
             curso_select_element = self.driver.find_element(By.ID, "comboCurso")
             self.curso_select = Select(curso_select_element)
 
@@ -97,11 +100,14 @@ class JupiterWeb():
         return self.buscar()
         
     def buscar(self):
+        """
+        Lógica do botão de buscar curso dentro do site, checando se o erro aparece
+        """
         botaoBuscar = self.driver.find_element(By.ID, "enviar")
         botaoBuscar.click()  
 
         try: # Verifica se o elemento de erro aparece
-            WebDriverWait(self.driver, 3).until(
+            WebDriverWait(self.driver, 1).until(
                 lambda driver: driver.find_element(By.ID, "err").is_displayed()
             )
             botoes = self.driver.find_elements(By.CSS_SELECTOR, "button.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-text-only")
@@ -110,9 +116,9 @@ class JupiterWeb():
                 if span.text == 'Fechar':
                     botao.click()
             return 0
-        except:
+        except: # Caso não tenha erro, prosseguir
             try:
-                WebDriverWait(self.driver, 3).until(
+                WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until(
                     lambda driver: driver.find_element(By.ID, "step4-tab").is_displayed()
                 )
             except Exception as e:
@@ -127,11 +133,14 @@ class JupiterWeb():
     # Cadastro dos Cursos e Disciplinas
     # -------------------------------------------------------------------------------- #
     def pegarInformacoesCurso(self, nome, unidade):
+        """
+        Pega as informações sobre um curso
+        """
         botaoGrade = self.driver.find_element(By.ID, "step4-tab")
         botaoGrade.click()
         
         try:
-            WebDriverWait(self.driver, 5).until(
+            WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until(
                 lambda driver: driver.find_element(By.ID, "step4-tab").is_displayed()
             )
         except Exception as e:
@@ -152,7 +161,7 @@ class JupiterWeb():
         botaoBuscar.click()
         
         try:
-            WebDriverWait(self.driver, 5).until(
+            WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until(
                 lambda driver: driver.find_element(By.ID, "step1-tab").is_displayed()
             )
         except Exception as e:
@@ -167,7 +176,7 @@ class JupiterWeb():
         """
         # Espera para poder interagir com o site novamente
         try:
-            WebDriverWait(self.driver, 10).until_not(
+            WebDriverWait(self.driver, TEMPO_ESPERA_MAX).until_not(
                 lambda driver: driver.find_element(By.CSS_SELECTOR, ".blockUI.blockOverlay").is_displayed()
             )
         except Exception:
@@ -218,6 +227,9 @@ class JupiterWeb():
             return
         
     def add_tipo_disc(self, tipo_disc, curso, nova_disciplina):
+        """
+        Adiciona a disciplina na sua lista correspondente dentro de curso
+        """
         if tipo_disc == "Disciplinas Obrigatórias":
             curso.add_obrigatoria(nova_disciplina)
         elif tipo_disc == "Disciplinas Optativas Livres":
