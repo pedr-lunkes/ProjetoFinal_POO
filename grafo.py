@@ -1,11 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from itertools import combinations
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
-import sys
 class Grafo:
     def __init__(self, cursos):
         self.G = nx.Graph()
@@ -69,62 +64,57 @@ class Grafo:
                     break
 
     def plotar_grafo(self):
-        class JanelaGrafo(QMainWindow):
-            def __init__(janela):
-                super().__init__()
-                janela.setWindowTitle("Grafo de Similaridade entre Cursos")
-                janela.setGeometry(100, 100, 1200, 800)
+        plt.figure(figsize=(18, 12))
+        pos = nx.kamada_kawai_layout(self.G)
 
-                widget = QWidget()
-                layout = QVBoxLayout(widget)
-                janela.setCentralWidget(widget)
+        # Cores dos nós por unidade
+        unidades = list({self.G.nodes[n]['unidade'] for n in self.G.nodes()})
+        cmap = plt.cm.get_cmap('tab20', len(unidades))
+        unidade_cores = {u: cmap(i) for i, u in enumerate(unidades)}
+        node_colors = [unidade_cores[self.G.nodes[n]['unidade']] for n in self.G.nodes()]
 
-                janela.canvas = FigureCanvas(Figure(figsize=(12, 8)))
-                layout.addWidget(janela.canvas)
+        # Desenha nós
+        nx.draw_networkx_nodes(
+            self.G, pos, node_color=node_colors, node_size=700,
+            edgecolors='black', linewidths=1
+        )
 
-                ax = janela.canvas.figure.add_subplot(111)
-                ax.set_title("Grafo de Similaridade entre Cursos\n(Tamanho da aresta = Proporção de disciplinas similares)")
-                ax.axis('off')
+        # Rótulos dos nós (mostra apenas o nome do curso, sem a unidade)
+        labels = {n: self.G.nodes[n]['nome_curso'] for n in self.G.nodes()}
+        nx.draw_networkx_labels(self.G, pos, labels, font_size=8)
 
-                G = self.G
-                pos = nx.kamada_kawai_layout(G)
+        # Desenha arestas por tipo
+        edges = self.G.edges(data=True)
+        for tipo, cor in self.tipo_aresta_cor.items():
+            edgelist = [(u, v) for u, v, d in edges if d['tipo'] == tipo]
+            widths = [d['weight'] for u, v, d in edges if d['tipo'] == tipo]
+            nx.draw_networkx_edges(
+                self.G, pos, edgelist=edgelist,
+                edge_color=cor, width=widths,
+                alpha=0.7, label=tipo.replace('_', ' ').title()
+            )
 
-                unidades = list({G.nodes[n]['unidade'] for n in G.nodes()})
-                cmap = plt.cm.get_cmap('tab20', len(unidades))
-                unidade_cores = {u: cmap(i) for i, u in enumerate(unidades)}
-                node_colors = [unidade_cores[G.nodes[n]['unidade']] for n in G.nodes()]
-
-                nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=700,
-                                    edgecolors='black', linewidths=1, ax=ax)
-
-                labels = {n: G.nodes[n]['nome_curso'] for n in G.nodes()}
-                nx.draw_networkx_labels(G, pos, labels, font_size=8, ax=ax)
-
-                edges = G.edges(data=True)
-                for tipo, cor in self.tipo_aresta_cor.items():
-                    edgelist = [(u, v) for u, v, d in edges if d['tipo'] == tipo]
-                    widths = [d['weight'] for u, v, d in edges if d['tipo'] == tipo]
-                    nx.draw_networkx_edges(
-                        G, pos, edgelist=edgelist,
-                        edge_color=cor, width=widths,
-                        alpha=0.7, label=tipo.replace('_', ' ').title(), ax=ax
-                    )
-
-                legenda_unidades = [
-                    Line2D([0], [0], marker='o', color='w',
+        # Legenda das unidades
+        legenda_unidades = plt.legend(
+            handles=[
+                plt.Line2D([0], [0], marker='o', color='w',
                         markerfacecolor=cor, markersize=10, label=unidade)
-                    for unidade, cor in unidade_cores.items()
-                ]
-                legenda_arestas = [
-                    Line2D([0], [0], color=cor, lw=3, label=tipo.replace('_', ' ').title())
-                    for tipo, cor in self.tipo_aresta_cor.items()
-                ]
+                for unidade, cor in unidade_cores.items()
+            ],
+            title="Unidades", loc='upper left'
+        )
+        plt.gca().add_artist(legenda_unidades)
 
-                ax.legend(handles=legenda_unidades + legenda_arestas,
-                        title="Unidades e Tipos de Disciplina", loc='best')
-                janela.canvas.draw()
+        # Legenda dos tipos de aresta
+        plt.legend(
+            handles=[
+                plt.Line2D([0], [0], color=cor, lw=3, label=tipo.replace('_', ' ').title())
+                for tipo, cor in self.tipo_aresta_cor.items()
+            ],
+            title="Tipo de Disciplina", loc='lower right', bbox_to_anchor=(1, 0)
+        )
 
-        app = QApplication(sys.argv)
-        janela = JanelaGrafo()
-        janela.show()
-        sys.exit(app.exec())
+        plt.title("Grafo de Similaridade entre Cursos\n(Tamanho da aresta = Proporção de disciplinas similares)")
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
