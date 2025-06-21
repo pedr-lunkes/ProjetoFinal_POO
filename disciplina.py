@@ -1,3 +1,8 @@
+# Grupo composto por:
+# Pedro Henrique de Sousa Prestes	15507819
+# Pedro Henrique Perez Dias		15484075
+# Pedro Lunkes Villela			15484287
+
 class Disciplina():
     def __init__(self, cod, nome, cred_aula, cred_trab, carga_horaria, carga_estagio, carga_praticas, atividades, curso):
         self.cod = cod

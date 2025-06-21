@@ -1,3 +1,8 @@
+# Grupo composto por:
+# Pedro Henrique de Sousa Prestes	15507819
+# Pedro Henrique Perez Dias		15484075
+# Pedro Lunkes Villela			15484287
+
 class Curso():
     def __init__(self, nome, unidade, duracao_ideal, duracao_min, duracao_max):
         self.nome = nome

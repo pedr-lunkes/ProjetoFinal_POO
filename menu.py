@@ -1,3 +1,8 @@
+# Grupo composto por:
+# Pedro Henrique de Sousa Prestes	15507819
+# Pedro Henrique Perez Dias		15484075
+# Pedro Lunkes Villela			15484287
+
 import os
 from rapidfuzz import process
 import spacy
@@ -160,7 +165,7 @@ class Menu():
                     for curso in disciplina.cursos:
                         aparicoesCurso[curso.nome] += 1
                         if aparicoesCurso[curso.nome] == 2:
-                            print(disciplina.nome)
+                            print(f"{curso.unidade}: {disciplina.nome}")
 
         # Grafo
             elif comando == '7':

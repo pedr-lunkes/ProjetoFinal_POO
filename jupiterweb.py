@@ -1,3 +1,8 @@
+# Grupo composto por:
+# Pedro Henrique de Sousa Prestes	15507819
+# Pedro Henrique Perez Dias		15484075
+# Pedro Lunkes Villela			15484287
+
 from curso import Curso
 from disciplina import Disciplina
 from unidade import Unidade

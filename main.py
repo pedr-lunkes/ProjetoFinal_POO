@@ -1,3 +1,8 @@
+# Grupo composto por:
+# Pedro Henrique de Sousa Prestes	15507819
+# Pedro Henrique Perez Dias		15484075
+# Pedro Lunkes Villela			15484287
+
 from unidade import Unidade
 from menu import Menu
 from jupiterweb import JupiterWeb
